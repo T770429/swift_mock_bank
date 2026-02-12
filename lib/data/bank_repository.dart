@@ -34,8 +34,8 @@ class ProfileData {
 class BankRepository {
   const BankRepository({
     required this.apiService,
-    this.accountId = 'account_001',
-    this.userId = 'account_001',
+    this.accountId = 'BPI001',
+    this.userId = 'BPI001',
   });
 
   final BpiApiService apiService;

@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 
 import 'data/bank_repository.dart';
+import 'login_page.dart';
 import 'models.dart';
 import 'profile_page.dart';
 import 'utils/app_formatters.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({
-    required this.repository,
-    super.key,
-  });
+  const HomePage({required this.repository, required this.onLogout, super.key});
 
-  static const String routeName = '/';
+  static const String routeName = '/home';
 
   final BankRepository repository;
+  final VoidCallback onLogout;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -70,6 +69,7 @@ class _HomePageState extends State<HomePage> {
                 transactions: data.transactions,
                 totalBalance: data.totalBalance,
                 onRefresh: _reload,
+                onProfileTap: _openProfileOptions,
               );
             }
 
@@ -79,10 +79,59 @@ class _HomePageState extends State<HomePage> {
               transactions: data.transactions,
               totalBalance: data.totalBalance,
               onRefresh: _reload,
+              onProfileTap: _openProfileOptions,
             );
           },
         );
       },
+    );
+  }
+
+  Future<void> _openProfileOptions() async {
+    final String? action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.person_outline),
+                title: const Text('View Profile'),
+                onTap: () => Navigator.pop(context, 'profile'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('Logout'),
+                onTap: () => Navigator.pop(context, 'logout'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (!mounted || action == null) {
+      return;
+    }
+
+    if (action == 'profile') {
+      Navigator.pushNamed(context, ProfilePage.routeName);
+      return;
+    }
+
+    if (action == 'logout') {
+      _logout();
+    }
+  }
+
+  void _logout() {
+    widget.onLogout();
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      LoginPage.routeName,
+      (Route<dynamic> route) => false,
     );
   }
 }
@@ -92,17 +141,12 @@ class _LoadingScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
 
 class _ErrorScaffold extends StatelessWidget {
-  const _ErrorScaffold({
-    required this.message,
-    required this.onRetry,
-  });
+  const _ErrorScaffold({required this.message, required this.onRetry});
 
   final String message;
   final VoidCallback onRetry;
@@ -118,10 +162,7 @@ class _ErrorScaffold extends StatelessWidget {
             children: <Widget>[
               Text(message),
               const SizedBox(height: 12),
-              FilledButton(
-                onPressed: onRetry,
-                child: const Text('Retry'),
-              ),
+              FilledButton(onPressed: onRetry, child: const Text('Retry')),
             ],
           ),
         ),
@@ -137,6 +178,7 @@ class _DesktopHomeScaffold extends StatelessWidget {
     required this.transactions,
     required this.totalBalance,
     required this.onRefresh,
+    required this.onProfileTap,
   });
 
   final Customer customer;
@@ -144,13 +186,14 @@ class _DesktopHomeScaffold extends StatelessWidget {
   final List<BankTransaction> transactions;
   final double totalBalance;
   final VoidCallback onRefresh;
+  final VoidCallback onProfileTap;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Row(
         children: <Widget>[
-          _DashboardSidebar(customer: customer),
+          _DashboardSidebar(customer: customer, onProfileTap: onProfileTap),
           Expanded(
             child: _DashboardContent(
               customer: customer,
@@ -174,6 +217,7 @@ class _MobileHomeScaffold extends StatelessWidget {
     required this.transactions,
     required this.totalBalance,
     required this.onRefresh,
+    required this.onProfileTap,
   });
 
   final Customer customer;
@@ -181,6 +225,7 @@ class _MobileHomeScaffold extends StatelessWidget {
   final List<BankTransaction> transactions;
   final double totalBalance;
   final VoidCallback onRefresh;
+  final VoidCallback onProfileTap;
 
   @override
   Widget build(BuildContext context) {
@@ -192,7 +237,7 @@ class _MobileHomeScaffold extends StatelessWidget {
       ),
       drawer: Drawer(
         child: SafeArea(
-          child: _DrawerContent(customer: customer),
+          child: _DrawerContent(customer: customer, onProfileTap: onProfileTap),
         ),
       ),
       body: _DashboardContent(
@@ -208,9 +253,10 @@ class _MobileHomeScaffold extends StatelessWidget {
 }
 
 class _DashboardSidebar extends StatelessWidget {
-  const _DashboardSidebar({required this.customer});
+  const _DashboardSidebar({required this.customer, required this.onProfileTap});
 
   final Customer customer;
+  final VoidCallback onProfileTap;
 
   @override
   Widget build(BuildContext context) {
@@ -242,26 +288,33 @@ class _DashboardSidebar extends StatelessWidget {
           const Spacer(),
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Row(
-              children: <Widget>[
-                const CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Color(0xFFFFF3E0),
-                  child: Text(
-                    '👤',
-                    style: TextStyle(fontSize: 16),
+            child: Tooltip(
+              message: 'Open profile options',
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: onProfileTap,
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Row(
+                    children: <Widget>[
+                      const CircleAvatar(
+                        radius: 18,
+                        backgroundColor: Color(0xFFFFF3E0),
+                        child: Text('👤', style: TextStyle(fontSize: 16)),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          customer.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    customer.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ],
@@ -271,9 +324,10 @@ class _DashboardSidebar extends StatelessWidget {
 }
 
 class _DrawerContent extends StatelessWidget {
-  const _DrawerContent({required this.customer});
+  const _DrawerContent({required this.customer, required this.onProfileTap});
 
   final Customer customer;
+  final VoidCallback onProfileTap;
 
   @override
   Widget build(BuildContext context) {
@@ -283,13 +337,14 @@ class _DrawerContent extends StatelessWidget {
         ListTile(
           leading: const CircleAvatar(
             backgroundColor: Color(0xFFFFF3E0),
-            child: Text(
-              '👤',
-              style: TextStyle(fontSize: 16),
-            ),
+            child: Text('👤', style: TextStyle(fontSize: 16)),
           ),
           title: Text(customer.name),
-          subtitle: const Text('Customer'),
+          subtitle: const Text('Tap for options'),
+          onTap: () {
+            Navigator.pop(context);
+            onProfileTap();
+          },
         ),
         const Divider(),
         _DrawerItem(
@@ -330,11 +385,7 @@ class _DrawerItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      onTap: onTap,
-    );
+    return ListTile(leading: Icon(icon), title: Text(title), onTap: onTap);
   }
 }
 
@@ -496,7 +547,8 @@ class _TotalBalanceCard extends StatelessWidget {
                 Tooltip(
                   message: 'Transfer money between accounts',
                   child: OutlinedButton.icon(
-                    onPressed: () => _showFeatureSnack(context, 'Transfer Money'),
+                    onPressed: () =>
+                        _showFeatureSnack(context, 'Transfer Money'),
                     icon: const Icon(Icons.swap_horiz),
                     label: const Text('Transfer'),
                   ),
@@ -512,7 +564,8 @@ class _TotalBalanceCard extends StatelessWidget {
                 Tooltip(
                   message: 'Manage payment card controls',
                   child: OutlinedButton.icon(
-                    onPressed: () => _showFeatureSnack(context, 'Card Controls'),
+                    onPressed: () =>
+                        _showFeatureSnack(context, 'Card Controls'),
                     icon: const Icon(Icons.tune),
                     label: const Text('Card Controls'),
                   ),
@@ -607,14 +660,14 @@ class _RecentActivityCard extends StatelessWidget {
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: CircleAvatar(
-                      backgroundColor:
-                          tx.isCredit ? Colors.green.shade50 : Colors.red.shade50,
+                      backgroundColor: tx.isCredit
+                          ? Colors.green.shade50
+                          : Colors.red.shade50,
                       child: Icon(
                         tx.isCredit ? Icons.south_west : Icons.north_east,
-                        color:
-                            tx.isCredit
-                                ? Colors.green.shade700
-                                : Colors.red.shade700,
+                        color: tx.isCredit
+                            ? Colors.green.shade700
+                            : Colors.red.shade700,
                       ),
                     ),
                     title: Text(tx.title),
@@ -624,10 +677,9 @@ class _RecentActivityCard extends StatelessWidget {
                     trailing: Text(
                       '${tx.isCredit ? '+' : '-'}${AppFormatters.currency(tx.amount.abs())}',
                       style: TextStyle(
-                        color:
-                            tx.isCredit
-                                ? Colors.green.shade700
-                                : Colors.red.shade700,
+                        color: tx.isCredit
+                            ? Colors.green.shade700
+                            : Colors.red.shade700,
                         fontWeight: FontWeight.w700,
                       ),
                     ),

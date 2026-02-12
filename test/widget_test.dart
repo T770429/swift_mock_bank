@@ -1,22 +1,32 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:swift_bank/main.dart';
 
 void main() {
-  testWidgets('App renders home view', (WidgetTester tester) async {
+  testWidgets('App supports login and logout flow', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(const SwiftBankApp());
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    expect(find.text('BPI Login'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextFormField).at(0), '001');
+    await tester.enterText(find.byType(TextFormField).at(1), 'password');
+    await tester.tap(find.widgetWithText(FilledButton, 'Submit'));
 
     await tester.pumpAndSettle();
-
     expect(find.text('Accounts'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Open profile options'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Logout'));
+    await tester.pumpAndSettle();
+    expect(find.text('BPI Login'), findsOneWidget);
   });
 }
