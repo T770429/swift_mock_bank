@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'api/bpi_api_service.dart';
 import 'data/bank_repository.dart';
 import 'home_page.dart';
+import 'login_page.dart';
 import 'profile_page.dart';
 
 void main() {
@@ -20,23 +21,49 @@ class SwiftBankApp extends StatefulWidget {
 
 class _SwiftBankAppState extends State<SwiftBankApp> {
   late final BpiApiService _apiService;
-  late final BankRepository _repository;
+  BankRepository? _repository;
 
   @override
   void initState() {
     super.initState();
 
-    _apiService = BpiApiService(
-      baseUrl: 'http://127.0.0.1:8001',
-    );
+    _apiService = BpiApiService(baseUrl: 'http://127.0.0.1:8001');
 
-    _repository = widget.repository ?? BankRepository(apiService: _apiService);
+    _repository = widget.repository;
   }
 
   @override
   void dispose() {
     _apiService.dispose();
     super.dispose();
+  }
+
+  void _handleLogin({required String accountNumber, required String password}) {
+    final String identifier = _buildIdentifier(accountNumber);
+
+    setState(() {
+      _repository = BankRepository(
+        apiService: _apiService,
+        accountId: identifier,
+        userId: identifier,
+      );
+    });
+  }
+
+  void _handleLogout() {
+    setState(() {
+      _repository = null;
+    });
+  }
+
+  String _buildIdentifier(String accountNumber) {
+    final String normalizedAccountNumber = accountNumber.trim().toUpperCase();
+
+    if (normalizedAccountNumber.startsWith('BPI')) {
+      return normalizedAccountNumber;
+    }
+
+    return 'BPI$normalizedAccountNumber';
   }
 
   @override
@@ -59,10 +86,23 @@ class _SwiftBankAppState extends State<SwiftBankApp> {
       debugShowCheckedModeBanner: false,
       title: 'Swift Bank',
       theme: baseTheme,
-      initialRoute: HomePage.routeName,
+      initialRoute: LoginPage.routeName,
       routes: <String, WidgetBuilder>{
-        HomePage.routeName: (_) => HomePage(repository: _repository),
-        ProfilePage.routeName: (_) => ProfilePage(repository: _repository),
+        LoginPage.routeName: (_) => LoginPage(onSubmit: _handleLogin),
+        HomePage.routeName: (_) {
+          final BankRepository? repository = _repository;
+          if (repository == null) {
+            return LoginPage(onSubmit: _handleLogin);
+          }
+          return HomePage(repository: repository, onLogout: _handleLogout);
+        },
+        ProfilePage.routeName: (_) {
+          final BankRepository? repository = _repository;
+          if (repository == null) {
+            return LoginPage(onSubmit: _handleLogin);
+          }
+          return ProfilePage(repository: repository);
+        },
       },
     );
   }
