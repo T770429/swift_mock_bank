@@ -93,3 +93,10 @@ class BankTransaction {
 
   bool get isCredit => amount > 0;
 }
+
+class Biller {
+  const Biller({required this.code, required this.name});
+
+  final String code;
+  final String name;
+}

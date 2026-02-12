@@ -66,6 +66,7 @@ class _HomePageState extends State<HomePage> {
               return _MobileHomeScaffold(
                 customer: data.customer,
                 accounts: data.accounts,
+                billers: data.billers,
                 transactions: data.transactions,
                 totalBalance: data.totalBalance,
                 onRefresh: _reload,
@@ -77,6 +78,7 @@ class _HomePageState extends State<HomePage> {
             return _DesktopHomeScaffold(
               customer: data.customer,
               accounts: data.accounts,
+              billers: data.billers,
               transactions: data.transactions,
               totalBalance: data.totalBalance,
               onRefresh: _reload,
@@ -181,6 +183,7 @@ class _DesktopHomeScaffold extends StatelessWidget {
   const _DesktopHomeScaffold({
     required this.customer,
     required this.accounts,
+    required this.billers,
     required this.transactions,
     required this.totalBalance,
     required this.onRefresh,
@@ -190,6 +193,7 @@ class _DesktopHomeScaffold extends StatelessWidget {
 
   final Customer customer;
   final List<BankAccount> accounts;
+  final List<Biller> billers;
   final List<BankTransaction> transactions;
   final double totalBalance;
   final VoidCallback onRefresh;
@@ -206,6 +210,7 @@ class _DesktopHomeScaffold extends StatelessWidget {
             child: _DashboardContent(
               customer: customer,
               accounts: accounts,
+              billers: billers,
               transactions: transactions,
               totalBalance: totalBalance,
               isCompact: false,
@@ -223,6 +228,7 @@ class _MobileHomeScaffold extends StatelessWidget {
   const _MobileHomeScaffold({
     required this.customer,
     required this.accounts,
+    required this.billers,
     required this.transactions,
     required this.totalBalance,
     required this.onRefresh,
@@ -232,6 +238,7 @@ class _MobileHomeScaffold extends StatelessWidget {
 
   final Customer customer;
   final List<BankAccount> accounts;
+  final List<Biller> billers;
   final List<BankTransaction> transactions;
   final double totalBalance;
   final VoidCallback onRefresh;
@@ -261,6 +268,7 @@ class _MobileHomeScaffold extends StatelessWidget {
       body: _DashboardContent(
         customer: customer,
         accounts: accounts,
+        billers: billers,
         transactions: transactions,
         totalBalance: totalBalance,
         isCompact: true,
@@ -418,6 +426,7 @@ class _DashboardContent extends StatelessWidget {
   const _DashboardContent({
     required this.customer,
     required this.accounts,
+    required this.billers,
     required this.transactions,
     required this.totalBalance,
     required this.isCompact,
@@ -427,6 +436,7 @@ class _DashboardContent extends StatelessWidget {
 
   final Customer customer;
   final List<BankAccount> accounts;
+  final List<Biller> billers;
   final List<BankTransaction> transactions;
   final double totalBalance;
   final bool isCompact;
@@ -462,6 +472,11 @@ class _DashboardContent extends StatelessWidget {
               _FlatSection(
                 title: 'Recent Activity',
                 child: _RecentActivityList(transactions: transactions),
+              ),
+              const SizedBox(height: 12),
+              _FlatSection(
+                title: 'Billers',
+                child: _BillersList(billers: billers),
               ),
             ],
           ),
@@ -671,7 +686,8 @@ class _AccountsList extends StatelessWidget {
       itemCount: accounts.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      separatorBuilder: (_, __) => const Divider(height: 1),
+      separatorBuilder: (BuildContext context, int index) =>
+          const Divider(height: 1),
       itemBuilder: (BuildContext context, int index) {
         final BankAccount account = accounts[index];
         return ListTile(
@@ -705,7 +721,8 @@ class _RecentActivityList extends StatelessWidget {
       itemCount: transactions.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      separatorBuilder: (_, __) => const Divider(height: 1),
+      separatorBuilder: (BuildContext context, int index) =>
+          const Divider(height: 1),
       itemBuilder: (BuildContext context, int index) {
         final BankTransaction tx = transactions[index];
         return ListTile(
@@ -727,6 +744,47 @@ class _RecentActivityList extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
+        );
+      },
+    );
+  }
+}
+
+class _BillersList extends StatelessWidget {
+  const _BillersList({required this.billers});
+
+  final List<Biller> billers;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Biller> visible = billers.take(6).toList(growable: false);
+
+    return ListView.separated(
+      itemCount: visible.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      separatorBuilder: (BuildContext context, int index) =>
+          const Divider(height: 1),
+      itemBuilder: (BuildContext context, int index) {
+        final Biller biller = visible[index];
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(vertical: 4),
+          leading: const Icon(
+            Icons.receipt_long_outlined,
+            color: Color(0xFF0057D9),
+          ),
+          title: Text(biller.name),
+          subtitle: Text('Code: ${biller.code}'),
+          trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF)),
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  '${biller.name} is ready for bill payment wiring.',
+                ),
+              ),
+            );
+          },
         );
       },
     );

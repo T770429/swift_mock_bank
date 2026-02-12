@@ -1,6 +1,8 @@
 import 'dart:developer' as developer;
 
+import '../api/biller_api_service.dart';
 import '../api/bpi_api_service.dart';
+import 'mappers/biller_api_mappers.dart';
 import 'mappers/bpi_api_mappers.dart';
 import '../models.dart';
 
@@ -9,11 +11,13 @@ class DashboardData {
     required this.customer,
     required this.accounts,
     required this.transactions,
+    required this.billers,
   });
 
   final Customer customer;
   final List<BankAccount> accounts;
   final List<BankTransaction> transactions;
+  final List<Biller> billers;
 
   double get totalBalance => accounts.fold<double>(
     0,
@@ -31,17 +35,20 @@ class ProfileData {
 class BankRepository {
   const BankRepository({
     required this.apiService,
+    required this.billerApiService,
     this.accountId = 'GCASH001',
     this.userId = 'GCASH001',
   });
 
   final BpiApiService apiService;
+  final BillerApiService billerApiService;
   final String accountId;
   final String userId;
 
   Future<DashboardData> getDashboardData() async {
     Map<String, dynamic>? balancePayload;
     Map<String, dynamic>? transactionsPayload;
+    Map<String, dynamic>? billersPayload;
 
     try {
       balancePayload = await apiService.getBalanceRaw(accountId: accountId);
@@ -67,6 +74,17 @@ class BankRepository {
       );
     }
 
+    try {
+      billersPayload = await billerApiService.getSupportedBillersRaw();
+    } catch (error, stackTrace) {
+      developer.log(
+        'Failed to fetch supported billers',
+        name: 'BankRepository',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
     final Customer customer = _resolveCustomer(
       balancePayload: balancePayload,
       transactionsPayload: transactionsPayload,
@@ -76,11 +94,13 @@ class BankRepository {
     final List<BankTransaction> transactions = _resolveTransactions(
       transactionsPayload,
     );
+    final List<Biller> billers = _resolveBillers(billersPayload);
 
     return DashboardData(
       customer: customer,
       accounts: accounts,
       transactions: transactions,
+      billers: billers,
     );
   }
 
@@ -170,6 +190,39 @@ class BankRepository {
       );
       return const <BankTransaction>[];
     }
+  }
+
+  List<Biller> _resolveBillers(Map<String, dynamic>? payload) {
+    if (payload == null) {
+      return _fallbackBillers();
+    }
+
+    try {
+      final List<Biller> mapped = BillerApiMappers.mapSupportedBillers(payload);
+      if (mapped.isEmpty) {
+        return _fallbackBillers();
+      }
+      return mapped;
+    } catch (error, stackTrace) {
+      developer.log(
+        'Failed to map supported billers payload',
+        name: 'BankRepository',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return _fallbackBillers();
+    }
+  }
+
+  List<Biller> _fallbackBillers() {
+    return const <Biller>[
+      Biller(code: 'MAYNILAD', name: 'Maynilad Water Services'),
+      Biller(code: 'MERALCO', name: 'Manila Electric Company'),
+      Biller(code: 'GLOBE', name: 'Globe Telecom'),
+      Biller(code: 'CONVERGE', name: 'Converge ICT'),
+      Biller(code: 'SSS', name: 'Social Security System'),
+      Biller(code: 'PAGIBIG', name: 'Home Development Mutual Fund'),
+    ];
   }
 
   String _maskAccountNumber(String id) {
