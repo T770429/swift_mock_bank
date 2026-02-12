@@ -22,10 +22,7 @@ class DashboardData {
 }
 
 class ProfileData {
-  const ProfileData({
-    required this.customer,
-    required this.accounts,
-  });
+  const ProfileData({required this.customer, required this.accounts});
 
   final Customer customer;
   final List<BankAccount> accounts;
@@ -34,8 +31,8 @@ class ProfileData {
 class BankRepository {
   const BankRepository({
     required this.apiService,
-    this.accountId = 'BPI001',
-    this.userId = 'BPI001',
+    this.accountId = 'GCASH001',
+    this.userId = 'GCASH001',
   });
 
   final BpiApiService apiService;
@@ -109,7 +106,7 @@ class BankRepository {
 
     return const Customer(
       name: 'Juan Dela Cruz',
-      email: 'juan.delacruz@bpi.com.ph',
+      email: 'juan.delacruz@gcash.com',
       address: 'Makati City, Metro Manila, Philippines',
       phone: '+63 917 000 0000',
       age: 30,
@@ -177,7 +174,9 @@ class BankRepository {
 
   String _maskAccountNumber(String id) {
     final String digits = id.replaceAll(RegExp(r'[^0-9]'), '');
-    final String suffix = digits.length >= 4 ? digits.substring(digits.length - 4) : id;
+    final String suffix = digits.length >= 4
+        ? digits.substring(digits.length - 4)
+        : id;
     return '**** $suffix';
   }
 }

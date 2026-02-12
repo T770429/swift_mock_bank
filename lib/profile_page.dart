@@ -4,11 +4,10 @@ import 'data/bank_repository.dart';
 import 'models.dart';
 import 'utils/app_formatters.dart';
 
+const Color _kBrandBlue = Color(0xFF0057D9);
+
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({
-    required this.repository,
-    super.key,
-  });
+  const ProfilePage({required this.repository, super.key});
 
   static const String routeName = '/profile';
 
@@ -47,7 +46,7 @@ class _ProfilePageState extends State<ProfilePage> {
         if (snapshot.hasError || !snapshot.hasData) {
           return Scaffold(
             appBar: AppBar(
-              backgroundColor: const Color(0xFFD32F2F),
+              backgroundColor: _kBrandBlue,
               foregroundColor: Colors.white,
               title: const Text('Customer Profile'),
             ),
@@ -57,10 +56,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: <Widget>[
                   const Text('Unable to load profile data.'),
                   const SizedBox(height: 12),
-                  FilledButton(
-                    onPressed: _reload,
-                    child: const Text('Retry'),
-                  ),
+                  FilledButton(onPressed: _reload, child: const Text('Retry')),
                 ],
               ),
             ),
@@ -71,7 +67,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         return Scaffold(
           appBar: AppBar(
-            backgroundColor: const Color(0xFFD32F2F),
+            backgroundColor: _kBrandBlue,
             foregroundColor: Colors.white,
             title: const Text('Customer Profile'),
             actions: <Widget>[
@@ -120,27 +116,30 @@ class _CustomerHeaderCard extends StatelessWidget {
           children: <Widget>[
             const CircleAvatar(
               radius: 34,
-              backgroundColor: Color(0xFFFFF3E0),
-              child: Text(
-                '👤',
-                style: TextStyle(fontSize: 26),
-              ),
+              backgroundColor: Color(0xFFE8F0FE),
+              child: Text('👤', style: TextStyle(fontSize: 26)),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(customer.name, style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    customer.name,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   const SizedBox(height: 4),
                   Text(customer.email),
                 ],
               ),
             ),
             Chip(
-              label: const Text('Verified'),
-              avatar: const Icon(Icons.verified, size: 18),
-              backgroundColor: Colors.green.shade100,
+              label: const Text(
+                'Verified',
+                style: TextStyle(color: _kBrandBlue),
+              ),
+              avatar: const Icon(Icons.verified, size: 18, color: _kBrandBlue),
+              backgroundColor: const Color(0xFFE8F0FE),
             ),
           ],
         ),
@@ -162,7 +161,10 @@ class _CustomerDetailCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text('Customer Details', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Customer Details',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 12),
             _DetailRow(label: 'Phone', value: customer.phone),
             _DetailRow(label: 'Address', value: customer.address),
@@ -189,7 +191,10 @@ class _LinkedAccountsCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text('Linked Accounts', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Linked Accounts',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 12),
             SizedBox(
               height: listHeight,
@@ -200,7 +205,10 @@ class _LinkedAccountsCard extends StatelessWidget {
 
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.account_balance_wallet),
+                    leading: const Icon(
+                      Icons.account_balance_wallet_outlined,
+                      color: _kBrandBlue,
+                    ),
                     title: Text(account.nickname),
                     subtitle: Text(
                       '${account.accountType.label} • ${account.accountNumber}',

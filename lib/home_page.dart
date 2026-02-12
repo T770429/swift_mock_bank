@@ -70,6 +70,7 @@ class _HomePageState extends State<HomePage> {
                 totalBalance: data.totalBalance,
                 onRefresh: _reload,
                 onProfileTap: _openProfileOptions,
+                onOpenProfile: _openProfilePage,
               );
             }
 
@@ -80,11 +81,16 @@ class _HomePageState extends State<HomePage> {
               totalBalance: data.totalBalance,
               onRefresh: _reload,
               onProfileTap: _openProfileOptions,
+              onOpenProfile: _openProfilePage,
             );
           },
         );
       },
     );
+  }
+
+  void _openProfilePage() {
+    Navigator.pushNamed(context, ProfilePage.routeName);
   }
 
   Future<void> _openProfileOptions() async {
@@ -179,6 +185,7 @@ class _DesktopHomeScaffold extends StatelessWidget {
     required this.totalBalance,
     required this.onRefresh,
     required this.onProfileTap,
+    required this.onOpenProfile,
   });
 
   final Customer customer;
@@ -187,6 +194,7 @@ class _DesktopHomeScaffold extends StatelessWidget {
   final double totalBalance;
   final VoidCallback onRefresh;
   final VoidCallback onProfileTap;
+  final VoidCallback onOpenProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -202,6 +210,7 @@ class _DesktopHomeScaffold extends StatelessWidget {
               totalBalance: totalBalance,
               isCompact: false,
               onRefresh: onRefresh,
+              onOpenProfile: onOpenProfile,
             ),
           ),
         ],
@@ -218,6 +227,7 @@ class _MobileHomeScaffold extends StatelessWidget {
     required this.totalBalance,
     required this.onRefresh,
     required this.onProfileTap,
+    required this.onOpenProfile,
   });
 
   final Customer customer;
@@ -226,14 +236,22 @@ class _MobileHomeScaffold extends StatelessWidget {
   final double totalBalance;
   final VoidCallback onRefresh;
   final VoidCallback onProfileTap;
+  final VoidCallback onOpenProfile;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Swift Bank'),
-        backgroundColor: const Color(0xFFD32F2F),
+        title: const Text('GCash'),
+        backgroundColor: const Color(0xFF0057D9),
         foregroundColor: Colors.white,
+        actions: <Widget>[
+          IconButton(
+            onPressed: onOpenProfile,
+            tooltip: 'Open profile',
+            icon: const Icon(Icons.person_outline),
+          ),
+        ],
       ),
       drawer: Drawer(
         child: SafeArea(
@@ -247,6 +265,7 @@ class _MobileHomeScaffold extends StatelessWidget {
         totalBalance: totalBalance,
         isCompact: true,
         onRefresh: onRefresh,
+        onOpenProfile: onOpenProfile,
       ),
     );
   }
@@ -262,18 +281,18 @@ class _DashboardSidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 240,
-      color: const Color(0xFFD32F2F),
+      color: const Color(0xFF0057D9),
       child: Column(
         children: <Widget>[
           const SizedBox(height: 36),
           Semantics(
-            label: 'Swift Bank brand logo',
+            label: 'GCash brand logo',
             image: true,
             child: Image.asset('assets/bank_logo.png', height: 58),
           ),
           const SizedBox(height: 12),
           const Text(
-            'BPI',
+            'GCash',
             style: TextStyle(
               color: Colors.white,
               fontSize: 22,
@@ -281,10 +300,16 @@ class _DashboardSidebar extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 28),
-          const _SidebarItem(icon: Icons.dashboard, title: 'Dashboard'),
-          const _SidebarItem(icon: Icons.credit_card, title: 'Cards'),
-          const _SidebarItem(icon: Icons.swap_horiz, title: 'Transfers'),
-          const _SidebarItem(icon: Icons.shield, title: 'Security'),
+          const _SidebarItem(
+            icon: Icons.dashboard_outlined,
+            title: 'Dashboard',
+          ),
+          const _SidebarItem(icon: Icons.credit_card_outlined, title: 'Cards'),
+          const _SidebarItem(
+            icon: Icons.swap_horiz_outlined,
+            title: 'Transfers',
+          ),
+          const _SidebarItem(icon: Icons.shield_outlined, title: 'Security'),
           const Spacer(),
           Padding(
             padding: const EdgeInsets.all(16),
@@ -348,22 +373,22 @@ class _DrawerContent extends StatelessWidget {
         ),
         const Divider(),
         _DrawerItem(
-          icon: Icons.dashboard,
+          icon: Icons.dashboard_outlined,
           title: 'Dashboard',
           onTap: () => Navigator.pop(context),
         ),
         _DrawerItem(
-          icon: Icons.credit_card,
+          icon: Icons.credit_card_outlined,
           title: 'Cards',
           onTap: () => Navigator.pop(context),
         ),
         _DrawerItem(
-          icon: Icons.swap_horiz,
+          icon: Icons.swap_horiz_outlined,
           title: 'Transfers',
           onTap: () => Navigator.pop(context),
         ),
         _DrawerItem(
-          icon: Icons.shield,
+          icon: Icons.shield_outlined,
           title: 'Security',
           onTap: () => Navigator.pop(context),
         ),
@@ -397,6 +422,7 @@ class _DashboardContent extends StatelessWidget {
     required this.totalBalance,
     required this.isCompact,
     required this.onRefresh,
+    required this.onOpenProfile,
   });
 
   final Customer customer;
@@ -405,174 +431,40 @@ class _DashboardContent extends StatelessWidget {
   final double totalBalance;
   final bool isCompact;
   final VoidCallback onRefresh;
+  final VoidCallback onOpenProfile;
 
   @override
   Widget build(BuildContext context) {
-    final String firstName = customer.name.split(' ').first;
-
     return SingleChildScrollView(
-      padding: EdgeInsets.all(isCompact ? 16 : 24),
+      padding: EdgeInsets.all(isCompact ? 0 : 24),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1040),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              _DashboardHeader(
-                firstName: firstName,
-                isCompact: isCompact,
+              _WalletHero(
+                balance: totalBalance,
                 onRefresh: onRefresh,
+                onOpenProfile: onOpenProfile,
               ),
-              const SizedBox(height: 18),
-              _TotalBalanceCard(totalBalance: totalBalance),
-              const SizedBox(height: 18),
-              if (isCompact)
-                Column(
-                  children: <Widget>[
-                    _AccountsCard(accounts: accounts),
-                    const SizedBox(height: 18),
-                    _RecentActivityCard(transactions: transactions),
-                  ],
-                )
-              else
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Expanded(child: _AccountsCard(accounts: accounts)),
-                    const SizedBox(width: 18),
-                    Expanded(
-                      child: _RecentActivityCard(transactions: transactions),
-                    ),
-                  ],
-                ),
+              const SizedBox(height: 16),
+              _QuickActionsGrid(
+                onActionTap: (String actionName) =>
+                    _showFeatureSnack(context, actionName),
+              ),
+              const SizedBox(height: 12),
+              _FlatSection(
+                title: 'Accounts',
+                child: _AccountsList(accounts: accounts),
+              ),
+              const SizedBox(height: 12),
+              _FlatSection(
+                title: 'Recent Activity',
+                child: _RecentActivityList(transactions: transactions),
+              ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DashboardHeader extends StatelessWidget {
-  const _DashboardHeader({
-    required this.firstName,
-    required this.isCompact,
-    required this.onRefresh,
-  });
-
-  final String firstName;
-  final bool isCompact;
-  final VoidCallback onRefresh;
-
-  @override
-  Widget build(BuildContext context) {
-    final Widget profileButton = Tooltip(
-      message: 'Open customer profile',
-      child: FilledButton.icon(
-        onPressed: () => Navigator.pushNamed(context, ProfilePage.routeName),
-        icon: const Icon(Icons.person_outline),
-        label: const Text('View Profile'),
-      ),
-    );
-
-    final Widget refreshButton = IconButton(
-      onPressed: onRefresh,
-      tooltip: 'Refresh dashboard data',
-      icon: const Icon(Icons.refresh),
-    );
-
-    if (isCompact) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: Text(
-                  'Welcome back, $firstName',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-              ),
-              refreshButton,
-            ],
-          ),
-          const SizedBox(height: 12),
-          profileButton,
-        ],
-      );
-    }
-
-    return Row(
-      children: <Widget>[
-        Expanded(
-          child: Text(
-            'Welcome back, $firstName',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-        ),
-        refreshButton,
-        profileButton,
-      ],
-    );
-  }
-}
-
-class _TotalBalanceCard extends StatelessWidget {
-  const _TotalBalanceCard({required this.totalBalance});
-
-  final double totalBalance;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            const Text(
-              'Total Available Balance',
-              style: TextStyle(color: Colors.black54),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              AppFormatters.currency(totalBalance),
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: <Widget>[
-                Tooltip(
-                  message: 'Transfer money between accounts',
-                  child: OutlinedButton.icon(
-                    onPressed: () =>
-                        _showFeatureSnack(context, 'Transfer Money'),
-                    icon: const Icon(Icons.swap_horiz),
-                    label: const Text('Transfer'),
-                  ),
-                ),
-                Tooltip(
-                  message: 'Pay a utility or merchant bill',
-                  child: OutlinedButton.icon(
-                    onPressed: () => _showFeatureSnack(context, 'Pay Bills'),
-                    icon: const Icon(Icons.receipt_long),
-                    label: const Text('Pay Bills'),
-                  ),
-                ),
-                Tooltip(
-                  message: 'Manage payment card controls',
-                  child: OutlinedButton.icon(
-                    onPressed: () =>
-                        _showFeatureSnack(context, 'Card Controls'),
-                    icon: const Icon(Icons.tune),
-                    label: const Text('Card Controls'),
-                  ),
-                ),
-              ],
-            ),
-          ],
         ),
       ),
     );
@@ -585,111 +477,258 @@ class _TotalBalanceCard extends StatelessWidget {
   }
 }
 
-class _AccountsCard extends StatelessWidget {
-  const _AccountsCard({required this.accounts});
+class _WalletHero extends StatelessWidget {
+  const _WalletHero({
+    required this.balance,
+    required this.onRefresh,
+    required this.onOpenProfile,
+  });
 
-  final List<BankAccount> accounts;
+  final double balance;
+  final VoidCallback onRefresh;
+  final VoidCallback onOpenProfile;
 
   @override
   Widget build(BuildContext context) {
-    final double listHeight = (accounts.length * 72.0).clamp(120.0, 320.0);
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text('Accounts', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: listHeight,
-              child: ListView.builder(
-                itemCount: accounts.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final BankAccount account = accounts[index];
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.account_balance_wallet),
-                    title: Text(account.nickname),
-                    subtitle: Text(
-                      '${account.accountType.label} • ${account.accountNumber}',
-                    ),
-                    trailing: Text(
-                      AppFormatters.currency(account.balance),
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 22),
+      decoration: const BoxDecoration(color: Color(0xFF0057D9)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              const Expanded(
+                child: Text(
+                  'Balance',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: onOpenProfile,
+                tooltip: 'Open profile',
+                icon: const Icon(Icons.person_outline, color: Colors.white),
+              ),
+              IconButton(
+                onPressed: onRefresh,
+                tooltip: 'Refresh dashboard data',
+                icon: const Icon(Icons.refresh_outlined, color: Colors.white),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  AppFormatters.currency(balance),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 42,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              OutlinedButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Cash In is ready for API wiring in this POC.',
+                      ),
                     ),
                   );
                 },
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.white),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Icon(Icons.add_outlined, size: 26),
               ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Available Balance',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _RecentActivityCard extends StatelessWidget {
-  const _RecentActivityCard({required this.transactions});
+class _QuickActionsGrid extends StatelessWidget {
+  const _QuickActionsGrid({required this.onActionTap});
+
+  final ValueChanged<String> onActionTap;
+
+  @override
+  Widget build(BuildContext context) {
+    const List<({String label, IconData icon})> actions =
+        <({String label, IconData icon})>[
+          (label: 'Cash In', icon: Icons.add_card_outlined),
+          (label: 'Send Money', icon: Icons.send_outlined),
+          (label: 'Save', icon: Icons.savings_outlined),
+          (label: 'Buy Load', icon: Icons.sim_card_outlined),
+          (label: 'Rewards', icon: Icons.card_giftcard_outlined),
+          (label: 'Credit', icon: Icons.credit_score_outlined),
+          (label: 'Pay Bills', icon: Icons.receipt_long_outlined),
+          (label: 'Bank Transfer', icon: Icons.account_balance_outlined),
+        ];
+
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      child: GridView.builder(
+        itemCount: actions.length,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 4,
+          childAspectRatio: 1.05,
+        ),
+        itemBuilder: (BuildContext context, int index) {
+          final ({String label, IconData icon}) action = actions[index];
+
+          return InkWell(
+            onTap: () => onActionTap(action.label),
+            borderRadius: BorderRadius.circular(10),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Icon(action.icon, color: const Color(0xFF0057D9), size: 30),
+                  const SizedBox(height: 8),
+                  Text(
+                    action.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF3D4048),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _FlatSection extends StatelessWidget {
+  const _FlatSection({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF353943),
+            ),
+          ),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _AccountsList extends StatelessWidget {
+  const _AccountsList({required this.accounts});
+
+  final List<BankAccount> accounts;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      itemCount: accounts.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (BuildContext context, int index) {
+        final BankAccount account = accounts[index];
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(vertical: 4),
+          leading: const Icon(
+            Icons.account_balance_wallet_outlined,
+            color: Color(0xFF0057D9),
+          ),
+          title: Text(account.nickname),
+          subtitle: Text(
+            '${account.accountType.label} • ${account.accountNumber}',
+          ),
+          trailing: Text(
+            AppFormatters.currency(account.balance),
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _RecentActivityList extends StatelessWidget {
+  const _RecentActivityList({required this.transactions});
 
   final List<BankTransaction> transactions;
 
   @override
   Widget build(BuildContext context) {
-    final double listHeight = (transactions.length * 86.0).clamp(160.0, 360.0);
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              'Recent Activity',
-              style: Theme.of(context).textTheme.titleMedium,
+    return ListView.separated(
+      itemCount: transactions.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (BuildContext context, int index) {
+        final BankTransaction tx = transactions[index];
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(vertical: 4),
+          leading: const Icon(
+            Icons.receipt_long_outlined,
+            color: Color(0xFF0057D9),
+          ),
+          title: Text(tx.title),
+          subtitle: Text(
+            '${tx.category.label} • ${AppFormatters.shortDate(tx.date)}',
+          ),
+          trailing: Text(
+            '${tx.isCredit ? '+' : '-'}${AppFormatters.currency(tx.amount.abs())}',
+            style: TextStyle(
+              color: tx.isCredit
+                  ? const Color(0xFF0F9D58)
+                  : const Color(0xFFB3261E),
+              fontWeight: FontWeight.w700,
             ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: listHeight,
-              child: ListView.builder(
-                itemCount: transactions.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final BankTransaction tx = transactions[index];
-
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: CircleAvatar(
-                      backgroundColor: tx.isCredit
-                          ? Colors.green.shade50
-                          : Colors.red.shade50,
-                      child: Icon(
-                        tx.isCredit ? Icons.south_west : Icons.north_east,
-                        color: tx.isCredit
-                            ? Colors.green.shade700
-                            : Colors.red.shade700,
-                      ),
-                    ),
-                    title: Text(tx.title),
-                    subtitle: Text(
-                      '${tx.category.label} • ${AppFormatters.shortDate(tx.date)}',
-                    ),
-                    trailing: Text(
-                      '${tx.isCredit ? '+' : '-'}${AppFormatters.currency(tx.amount.abs())}',
-                      style: TextStyle(
-                        color: tx.isCredit
-                            ? Colors.green.shade700
-                            : Colors.red.shade700,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

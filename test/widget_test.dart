@@ -14,7 +14,7 @@ void main() {
 
     await tester.pumpWidget(const SwiftBankApp());
 
-    expect(find.text('BPI Login'), findsOneWidget);
+    expect(find.text('GCash Login'), findsOneWidget);
 
     await tester.enterText(find.byType(TextFormField).at(0), '001');
     await tester.enterText(find.byType(TextFormField).at(1), 'password');
@@ -27,6 +27,6 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Logout'));
     await tester.pumpAndSettle();
-    expect(find.text('BPI Login'), findsOneWidget);
+    expect(find.text('GCash Login'), findsOneWidget);
   });
 }

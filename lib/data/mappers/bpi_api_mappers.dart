@@ -4,14 +4,14 @@ import '../../models.dart';
 class BpiApiMappers {
   static Customer mapCustomerFromEnvelope(Object? payload) {
     final Map<String, dynamic> map = _asMap(_unwrapData(payload));
-    final String name = _pickString(map, <String>['name', 'full_name']) ??
-        'Juan Dela Cruz';
+    final String name =
+        _pickString(map, <String>['name', 'full_name']) ?? 'Juan Dela Cruz';
 
     return Customer(
       name: name,
-      email:
-          _pickString(map, <String>['email']) ?? 'juan.delacruz@bpi.com.ph',
-      address: _pickString(map, <String>['address']) ??
+      email: _pickString(map, <String>['email']) ?? 'juan.delacruz@gcash.com',
+      address:
+          _pickString(map, <String>['address']) ??
           'Makati City, Metro Manila, Philippines',
       phone: _pickString(map, <String>['phone']) ?? '+63 917 000 0000',
       age: _asInt(map['age']) ?? 30,
@@ -29,7 +29,8 @@ class BpiApiMappers {
 
     return BankAccount(
       accountId: resolvedId,
-      nickname: _pickString(map, <String>['nickname', 'name']) ??
+      nickname:
+          _pickString(map, <String>['nickname', 'name']) ??
           'Pangunahing Account',
       accountType: _mapAccountType(
         _pickString(map, <String>['account_type', 'type']),
@@ -55,7 +56,9 @@ class BpiApiMappers {
         return directBalance;
       }
 
-      final double? availableBalance = _asDouble(normalized['available_balance']);
+      final double? availableBalance = _asDouble(
+        normalized['available_balance'],
+      );
       if (availableBalance != null) {
         return availableBalance;
       }
@@ -88,10 +91,13 @@ class BpiApiMappers {
   }
 
   static BankTransaction mapTransaction(Map<String, dynamic> json) {
-    final String title = _pickString(
-          json,
-          <String>['title', 'description', 'merchant', 'reference'],
-        ) ??
+    final String title =
+        _pickString(json, <String>[
+          'title',
+          'description',
+          'merchant',
+          'reference',
+        ]) ??
         'Transaction';
 
     final TransactionCategory category = _mapCategory(
@@ -116,14 +122,17 @@ class BpiApiMappers {
     final Map<String, dynamic> map = _asMap(_unwrapData(payload));
 
     final bool success = _asBool(map['success']) ?? true;
-    final String? referenceId = _pickString(
-      map,
-      <String>['reference_id', 'referenceId', 'transaction_id', 'id'],
-    );
-    final String? message = _pickString(
-      map,
-      <String>['message', 'detail', 'status'],
-    );
+    final String? referenceId = _pickString(map, <String>[
+      'reference_id',
+      'referenceId',
+      'transaction_id',
+      'id',
+    ]);
+    final String? message = _pickString(map, <String>[
+      'message',
+      'detail',
+      'status',
+    ]);
 
     return BpiTransferResult(
       success: success,
@@ -166,7 +175,8 @@ class BpiApiMappers {
   }
 
   static double _normalizeAmount(Map<String, dynamic> json) {
-    final double raw = _asDouble(
+    final double raw =
+        _asDouble(
           json['amount'] ??
               json['value'] ??
               json['transaction_amount'] ??
@@ -174,10 +184,11 @@ class BpiApiMappers {
         ) ??
         0;
 
-    final String? direction = _pickString(
-      json,
-      <String>['direction', 'debit_credit', 'entry_type'],
-    );
+    final String? direction = _pickString(json, <String>[
+      'direction',
+      'debit_credit',
+      'entry_type',
+    ]);
 
     final bool? isCreditFlag = _asBool(json['is_credit'] ?? json['credit']);
     final bool? isDebitFlag = _asBool(json['is_debit'] ?? json['debit']);

@@ -27,7 +27,7 @@ class _SwiftBankAppState extends State<SwiftBankApp> {
   void initState() {
     super.initState();
 
-    _apiService = BpiApiService(baseUrl: 'http://127.0.0.1:8001');
+    _apiService = BpiApiService(baseUrl: 'http://127.0.0.1:8000');
 
     _repository = widget.repository;
   }
@@ -59,11 +59,11 @@ class _SwiftBankAppState extends State<SwiftBankApp> {
   String _buildIdentifier(String accountNumber) {
     final String normalizedAccountNumber = accountNumber.trim().toUpperCase();
 
-    if (normalizedAccountNumber.startsWith('BPI')) {
+    if (normalizedAccountNumber.startsWith('GCASH')) {
       return normalizedAccountNumber;
     }
 
-    return 'BPI$normalizedAccountNumber';
+    return 'GCASH$normalizedAccountNumber';
   }
 
   @override
@@ -71,12 +71,13 @@ class _SwiftBankAppState extends State<SwiftBankApp> {
     final ThemeData baseTheme = ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFFD32F2F),
-        primary: const Color(0xFFD32F2F),
+        seedColor: const Color(0xFF0057D9),
+        primary: const Color(0xFF0057D9),
+        surface: Colors.white,
       ),
-      scaffoldBackgroundColor: const Color(0xFFF6F7FB),
+      scaffoldBackgroundColor: const Color(0xFFF2F3F5),
       cardTheme: CardThemeData(
-        elevation: 2,
+        elevation: 0,
         color: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
@@ -84,7 +85,7 @@ class _SwiftBankAppState extends State<SwiftBankApp> {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Swift Bank',
+      title: 'GCash',
       theme: baseTheme,
       initialRoute: LoginPage.routeName,
       routes: <String, WidgetBuilder>{
