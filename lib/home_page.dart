@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'data/bank_repository.dart';
 import 'login_page.dart';
 import 'models.dart';
@@ -66,25 +65,33 @@ class _HomePageState extends State<HomePage> {
               return _MobileHomeScaffold(
                 customer: data.customer,
                 accounts: data.accounts,
+                billers: data.billers,
                 transactions: data.transactions,
                 totalBalance: data.totalBalance,
                 onRefresh: _reload,
                 onProfileTap: _openProfileOptions,
+                onOpenProfile: _openProfilePage,
               );
             }
 
             return _DesktopHomeScaffold(
               customer: data.customer,
               accounts: data.accounts,
+              billers: data.billers,
               transactions: data.transactions,
               totalBalance: data.totalBalance,
               onRefresh: _reload,
               onProfileTap: _openProfileOptions,
+              onOpenProfile: _openProfilePage,
             );
           },
         );
       },
     );
+  }
+
+  void _openProfilePage() {
+    Navigator.pushNamed(context, ProfilePage.routeName);
   }
 
   Future<void> _openProfileOptions() async {
@@ -175,18 +182,22 @@ class _DesktopHomeScaffold extends StatelessWidget {
   const _DesktopHomeScaffold({
     required this.customer,
     required this.accounts,
+    required this.billers,
     required this.transactions,
     required this.totalBalance,
     required this.onRefresh,
     required this.onProfileTap,
+    required this.onOpenProfile,
   });
 
   final Customer customer;
   final List<BankAccount> accounts;
+  final List<Biller> billers;
   final List<BankTransaction> transactions;
   final double totalBalance;
   final VoidCallback onRefresh;
   final VoidCallback onProfileTap;
+  final VoidCallback onOpenProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -198,6 +209,7 @@ class _DesktopHomeScaffold extends StatelessWidget {
             child: _DashboardContent(
               customer: customer,
               accounts: accounts,
+              billers: billers,
               transactions: transactions,
               totalBalance: totalBalance,
               isCompact: false,
@@ -214,18 +226,22 @@ class _MobileHomeScaffold extends StatelessWidget {
   const _MobileHomeScaffold({
     required this.customer,
     required this.accounts,
+    required this.billers,
     required this.transactions,
     required this.totalBalance,
     required this.onRefresh,
     required this.onProfileTap,
+    required this.onOpenProfile,
   });
 
   final Customer customer;
   final List<BankAccount> accounts;
+  final List<Biller> billers;
   final List<BankTransaction> transactions;
   final double totalBalance;
   final VoidCallback onRefresh;
   final VoidCallback onProfileTap;
+  final VoidCallback onOpenProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -243,6 +259,7 @@ class _MobileHomeScaffold extends StatelessWidget {
       body: _DashboardContent(
         customer: customer,
         accounts: accounts,
+        billers: billers,
         transactions: transactions,
         totalBalance: totalBalance,
         isCompact: true,
@@ -281,10 +298,16 @@ class _DashboardSidebar extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 28),
-          const _SidebarItem(icon: Icons.dashboard, title: 'Dashboard'),
-          const _SidebarItem(icon: Icons.credit_card, title: 'Cards'),
-          const _SidebarItem(icon: Icons.swap_horiz, title: 'Transfers'),
-          const _SidebarItem(icon: Icons.shield, title: 'Security'),
+          const _SidebarItem(
+            icon: Icons.dashboard_outlined,
+            title: 'Dashboard',
+          ),
+          _SidebarItem(icon: Icons.credit_card_outlined, title: 'Cards'),
+          const _SidebarItem(
+            icon: Icons.swap_horiz_outlined,
+            title: 'Transfers',
+          ),
+          const _SidebarItem(icon: Icons.shield_outlined, title: 'Security'),
           const Spacer(),
           Padding(
             padding: const EdgeInsets.all(16),
@@ -353,11 +376,6 @@ class _DrawerContent extends StatelessWidget {
           onTap: () => Navigator.pop(context),
         ),
         _DrawerItem(
-          icon: Icons.credit_card,
-          title: 'Cards',
-          onTap: () => Navigator.pop(context),
-        ),
-        _DrawerItem(
           icon: Icons.swap_horiz,
           title: 'Transfers',
           onTap: () => Navigator.pop(context),
@@ -393,6 +411,7 @@ class _DashboardContent extends StatelessWidget {
   const _DashboardContent({
     required this.customer,
     required this.accounts,
+    required this.billers,
     required this.transactions,
     required this.totalBalance,
     required this.isCompact,
@@ -401,6 +420,7 @@ class _DashboardContent extends StatelessWidget {
 
   final Customer customer;
   final List<BankAccount> accounts;
+  final List<Biller> billers;
   final List<BankTransaction> transactions;
   final double totalBalance;
   final bool isCompact;
@@ -424,24 +444,71 @@ class _DashboardContent extends StatelessWidget {
                 onRefresh: onRefresh,
               ),
               const SizedBox(height: 18),
-              _TotalBalanceCard(totalBalance: totalBalance),
-              const SizedBox(height: 18),
               if (isCompact)
                 Column(
                   children: <Widget>[
+                    _TotalBalanceCard(totalBalance: totalBalance),
+                    const SizedBox(height: 18),
                     _AccountsCard(accounts: accounts),
+                    const SizedBox(height: 18),
+                    _BillersCard(billers: billers),
                     const SizedBox(height: 18),
                     _RecentActivityCard(transactions: transactions),
                   ],
                 )
               else
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Column(
                   children: <Widget>[
-                    Expanded(child: _AccountsCard(accounts: accounts)),
-                    const SizedBox(width: 18),
-                    Expanded(
-                      child: _RecentActivityCard(transactions: transactions),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Expanded(
+                          child: LayoutBuilder(
+                            builder:
+                                (
+                                  BuildContext context,
+                                  BoxConstraints constraints,
+                                ) {
+                                  final double balanceWidth =
+                                      ((constraints.maxWidth - 18) * 0.62)
+                                          .clamp(420.0, 620.0)
+                                          .toDouble();
+                                  return Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      SizedBox(
+                                        width: balanceWidth,
+                                        child: _TotalBalanceCard(
+                                          totalBalance: totalBalance,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 18),
+                                      Expanded(
+                                        child: _BillersCard(
+                                          billers: billers,
+                                          compact: true,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Expanded(child: _AccountsCard(accounts: accounts)),
+                        const SizedBox(width: 18),
+                        Expanded(
+                          child: _RecentActivityCard(
+                            transactions: transactions,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -691,6 +758,89 @@ class _RecentActivityCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _BillersCard extends StatelessWidget {
+  const _BillersCard({required this.billers, this.compact = false});
+
+  final List<Biller> billers;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Biller> visibleBillers = compact
+        ? billers.take(4).toList(growable: false)
+        : billers;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text('Billers', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: compact ? 210 : 280,
+              child: ListView.separated(
+                itemCount: visibleBillers.length,
+                separatorBuilder: (BuildContext context, int index) =>
+                    const Divider(height: 1),
+                itemBuilder: (BuildContext context, int index) {
+                  final Biller biller = visibleBillers[index];
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(
+                      _iconForBiller(biller),
+                      color: const Color(0xFF0057D9),
+                    ),
+                    title: Text(biller.name),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '${biller.name} payment flow is ready for wiring.',
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _iconForBiller(Biller biller) {
+    final String key = '${biller.code} ${biller.name}'.toLowerCase();
+
+    if (key.contains('electric') || key.contains('meralco')) {
+      return Icons.bolt_outlined;
+    }
+    if (key.contains('water') || key.contains('maynilad')) {
+      return Icons.water_drop_outlined;
+    }
+    if (key.contains('telecom') ||
+        key.contains('globe') ||
+        key.contains('smart') ||
+        key.contains('pldt')) {
+      return Icons.wifi_outlined;
+    }
+    if (key.contains('sss') ||
+        key.contains('pagibig') ||
+        key.contains('government')) {
+      return Icons.account_balance_outlined;
+    }
+    if (key.contains('insurance') || key.contains('health')) {
+      return Icons.health_and_safety_outlined;
+    }
+
+    return Icons.receipt_long_outlined;
   }
 }
 

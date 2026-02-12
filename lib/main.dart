@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'api/biller_api_service.dart';
 import 'api/bpi_api_service.dart';
 import 'data/bank_repository.dart';
 import 'home_page.dart';
@@ -21,6 +22,7 @@ class SwiftBankApp extends StatefulWidget {
 
 class _SwiftBankAppState extends State<SwiftBankApp> {
   late final BpiApiService _apiService;
+  late final BillerApiService _billerApiService;
   BankRepository? _repository;
 
   @override
@@ -28,6 +30,7 @@ class _SwiftBankAppState extends State<SwiftBankApp> {
     super.initState();
 
     _apiService = BpiApiService(baseUrl: 'http://127.0.0.1:8001');
+    _billerApiService = BillerApiService(baseUrl: 'http://127.0.0.1:8001');
 
     _repository = widget.repository;
   }
@@ -35,6 +38,7 @@ class _SwiftBankAppState extends State<SwiftBankApp> {
   @override
   void dispose() {
     _apiService.dispose();
+    _billerApiService.dispose();
     super.dispose();
   }
 
@@ -44,6 +48,7 @@ class _SwiftBankAppState extends State<SwiftBankApp> {
     setState(() {
       _repository = BankRepository(
         apiService: _apiService,
+        billerApiService: _billerApiService,
         accountId: identifier,
         userId: identifier,
       );
