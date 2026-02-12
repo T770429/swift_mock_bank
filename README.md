@@ -1,17 +1,47 @@
-# swift_bank
+# Swift Mock Bank
 
-A new Flutter project.
+Flutter demo banking dashboard with responsive layouts, typed mock domain models, centralized formatting utilities, and widget tests.
 
-## Getting Started
+## Requirements
 
-This project is a starting point for a Flutter application.
+- Flutter SDK (stable channel)
+- Dart SDK compatible with `sdk: ^3.10.8`
 
-A few resources to get you started if this is your first Flutter project:
+## Run
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```bash
+flutter pub get
+flutter run
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-# swift_mock_bank
+## Quality Checks
+
+```bash
+flutter analyze
+flutter test
+```
+
+## Project Structure
+
+- `lib/main.dart`: App entrypoint, theme, and named routes
+- `lib/home_page.dart`: Responsive dashboard with extracted UI sections
+- `lib/profile_page.dart`: Customer profile screen
+- `lib/mock_bank_data.dart`: Mock seed data
+- `lib/models.dart`: Domain entities and enums
+- `lib/utils/app_formatters.dart`: Shared currency/date formatting helpers
+- `test/widget_test.dart`: Widget behavior tests (rendering, navigation, responsive UI)
+- `test/app_formatters_test.dart`: Formatter unit tests
+
+## Implemented Improvements
+
+- Named route navigation (`/` and `/profile`) for centralized routing.
+- Responsive dashboard behavior:
+  - Desktop uses persistent sidebar.
+  - Mobile uses AppBar + Drawer layout.
+- Extracted large page widgets into focused, reusable sections.
+- Converted mock transaction dates from string to `DateTime` and categories/types to enums.
+- Replaced duplicated ad-hoc currency formatting with `intl` formatters.
+- Added accessibility improvements with semantic labels and actionable tooltips.
+- Replaced eager spread list rendering with `ListView.builder` in account/activity sections.
+- Enabled stricter lints in `analysis_options.yaml`.
+- Expanded automated tests beyond a single smoke test.
